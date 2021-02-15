@@ -1,7 +1,7 @@
 {%- if is_array -%}
-{%- if indent != 0%}{{ " "|rjust:indent }}{% endif %}- metadata:
+{%- if indent != 0%}{{ " "|rjust:indent }}{% endif %}- policyTypes:
 {%- else %}
-{%- if indent != 0%}{{ " "|rjust:indent }}{% endif %}metadata:
+{%- if indent != 0%}{{ " "|rjust:indent }}{% endif %}policyTypes:
 {%- endif %}
 {% if indent != 0%}{{ " "|rjust:indent }}{% endif %}{% if item == "ingress" %}- Ingress{% endif -%}
-{% if indent != 0%}{{ " "|rjust:indent }}{% endif %}{% if item == "engress" %}- Engress{% endif -%}
+{% if indent != 0%}{{ " "|rjust:indent }}{% endif %}{% if item == "egress" %}- Egress{% endif -%}
