@@ -6,4 +6,4 @@
 {%- for item in items %}
 {% if indent != 0%}{{ " "|rjust:indent }}{% endif %}- protocol: {{ item.Protocol }}
 {% if indent != 0%}{{ " "|rjust:indent }}{% endif %}  port: {{ item.Port }}
-{%- endfor %}
+{% endfor %}
