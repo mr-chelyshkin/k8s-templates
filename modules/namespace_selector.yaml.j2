@@ -1,0 +1,7 @@
+{%- if is_array -%}
+{%- if indent != 0%}{{ " "|rjust:indent }}{% endif %}- namespaceSelector:
+{%- else %}
+{%- if indent != 0%}{{ " "|rjust:indent }}{% endif %}namespaceSelector:
+{%- endif %}
+{% if indent != 0%}{{ " "|rjust:indent }}{% endif %}  matchLabels:
+{% if indent != 0%}{{ " "|rjust:indent }}{% endif %}    name: {{ item }}

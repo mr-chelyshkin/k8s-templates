@@ -1,0 +1,7 @@
+{%- if is_array -%}
+{%- if indent != 0%}{{ " "|rjust:indent }}{% endif %}- podSelector:
+{%- else %}
+{%- if indent != 0%}{{ " "|rjust:indent }}{% endif %}podSelector:
+{%- endif %}
+{% if indent != 0%}{{ " "|rjust:indent }}{% endif %}  matchLabels:
+{% if indent != 0%}{{ " "|rjust:indent }}{% endif %}    app: {{ item }}

@@ -1,0 +1,6 @@
+{%- if is_array -%}
+{%- if indent != 0%}{{ " "|rjust:indent }}{% endif %}- metadata:
+{%- else %}
+{%- if indent != 0%}{{ " "|rjust:indent }}{% endif %}metadata:
+{%- endif %}
+{% if indent != 0%}{{ " "|rjust:indent }}{% endif %}  cidr: {{ item }}

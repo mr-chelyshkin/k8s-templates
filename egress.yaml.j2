@@ -1,0 +1,24 @@
+{%- with block_name=app|add:"-"|add:item.Group|add:"-"|add:"egress" -%}
+{%- with firewall_type= "egress"-%}
+{%- with namespace=namespace -%}
+---
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+{% include "./modules/metadata.yaml.j2" with indent=0 item1=block_name item2=namespace %}
+spec:
+{% include "./modules/pod_selector.yaml.j2" with indent=2 item=app %}
+{% include "./modules/policy_types.yaml.j2" with indent=2 item=firewall_type %}
+  egress:
+  - to:
+{%- if !item.Service %}
+{% include "./modules/ip_block.yaml.j2" with indent=4 item=item.Mask is_array=true %}
+{%- endif %}
+{%- if !item.Mask %}
+{% include "./modules/namespace_selector.yaml.j2" with indent=4 item=item.Service|add:"-egress" is_array=true %}
+{% include "./modules/pod_selector.yaml.j2" with indent=6 item=app %}
+{%- endif %}
+{% include "./modules/protocol_port.yaml.j2" with indent=4 items=item.Ports %}
+
+{%- endwith -%}
+{%- endwith -%}
+{%- endwith -%}
