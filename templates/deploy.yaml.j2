@@ -1,0 +1,110 @@
+---
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: {{ name }}
+  namespace: {{ namespace }}
+imagePullSecrets:
+- name: gitlab-registry
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  namespace: {{ namespace }}
+  annotations:
+    mail.ru/mail-maintainer: {{ maintainer }}
+  name: {{ instance_name|default(name, true) }}
+  labels:
+    {% if stage == 'true' or stage == true or stage == 'True' -%}
+    stage: 'true'
+    {% endif -%}
+    app: {{ instance_name|default(name, true) }}
+    version: "{{ images[name]['tag'] }}"
+spec:
+  progressDeadlineSeconds: 600
+  revisionHistoryLimit: 10
+  strategy:
+    rollingUpdate:
+      maxSurge: {{ max_surge|default('25%', true) }}
+      maxUnavailable: {{ max_unavailable|default('10%', true) }}
+    type: RollingUpdate
+  replicas: {{ replicas|default(1) }}
+  selector:
+    matchLabels:
+      app: {{ instance_name|default(name, true) }}
+  template:
+    metadata:
+      annotations:
+        {% if prometheus %}
+        prometheus.io/path: /metrics
+        prometheus.io/scrape: 'true'
+        prometheus.io/port: '{{ pprof_port }}'
+        {% endif %}
+      labels:
+        {% if pprofer == 'true' or pprofer == true or pprofer == 'True' -%}
+        pprofer: 'true'
+        {% endif -%}
+        {% if stage == 'true' or stage == true or stage == 'True' -%}
+        stage: 'true'
+        {% endif -%}
+        app: {{ instance_name|default(name, true) }}
+        unit: {{ unit }}
+    spec:
+      tolerations:
+      - effect: NoSchedule
+        key: cni
+        value: calico
+      - effect: NoSchedule
+        key: slow_cpu
+      serviceAccountName: {{ name }}
+      containers:
+      - name: {{ name }}
+        image: registry-gitlab.corp.mail.ru/{{ images[name]['path'] }}:{{ images[name]['tag'] }}{% if images[name]['centos']|default(true) %}-centos-{{ images['centos7']['tag'] }}{% endif %}
+        imagePullPolicy: Always
+        {% if command -%}
+        command: ["{{ command }}"]
+        {% endif -%}
+        {% if env -%}
+        env:
+        {{ env | yaml | indent(8) }}
+        {% endif -%}
+        {% if args -%}
+        args: {{ args }}
+        {% endif -%}
+        resources:
+          requests:
+            memory: "{{ request_memory|default('800Mi', true) }}"
+            cpu: "{{ request_cpu|default('500m', true) }}"
+          limits:
+            memory: "{{ limit_memory|default('1Gi', true) }}"
+            cpu: "{{ limit_cpu|default('1', true) }}"
+        {% if pprof_port %}
+        livenessProbe:
+          failureThreshold: 3
+          httpGet:
+            path: {{ liveness_url }}
+            port: {{ pprof_port }}
+            scheme: HTTP
+          initialDelaySeconds: 30
+          periodSeconds: 30
+          successThreshold: 1
+          timeoutSeconds: {{ liveness_timeout }}
+        {% endif %}
+        {% if readiness_probe_enabled -%}
+        readinessProbe:
+          failureThreshold: 3
+          httpGet:
+            path: {{ readiness_url }}
+            port: {{ readiness_port }}
+            scheme: HTTP
+          initialDelaySeconds: {{ readiness_initial_delay_seconds|default('30', true) }}
+          periodSeconds: 30
+          successThreshold: 1
+          timeoutSeconds: {{ readiness_timeout }}
+        {% endif %}
+      {% if nodeSelector %}
+      nodeSelector:
+      {% for selector, value in nodeSelector.items() -%}
+        {{ selector|indent(2, True) }}: "{{ value }}"
+      {% endfor -%}
+      {% endif -%}

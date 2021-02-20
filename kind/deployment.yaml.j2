@@ -1,0 +1,8 @@
+apiVersion: apps/v1
+kind: Deployment
+{% include "../modules/metadata.yaml.j2" with indent=0 name=app.Name namespace=namespace %}
+spec:
+{% include "../modules/pod_selector.yaml.j2" with indent=2 name=app.Name %}
+{{ " "|rjust:2 }}replicas: {{ app.ReplicasNum }}
+{{ " "|rjust:2 }}template:
+{% include "../modules/metadata.yaml.j2" with indent=0 namespace=namespace %}
